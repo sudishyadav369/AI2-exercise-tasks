@@ -20,7 +20,13 @@ import torch
 # Step 3: Call y.backward() to compute the gradient dy/dx.
 #
 # Step 4: Print x.grad (use .item()) — this holds the computed gradient.
-
+x = torch.tensor(4.0, requires_grad=True)
+y = 3 * x**3 - 2 * x**2 + x
+y.backward()
+print("Task 1:")
+print("  x      =", x.item())
+print("  y      =", y.item())
+print("  x.grad =", x.grad.item())
 
 # ===========================================================================
 # Task 2: Manual Gradient Verification
@@ -44,7 +50,11 @@ import torch
 #         Do they match?
 #
 # Answer:
-
+print("\nTask 2:")
+manual_grad = 9 * 4.0**2 - 4 * 4.0 + 1
+print("  Manual gradient:  ", manual_grad)
+print("  Autograd gradient:", x.grad.item())
+print("  Match:", manual_grad == x.grad.item())
 
 # ===========================================================================
 # Task 3: Second Function — Full Verification
@@ -62,18 +72,28 @@ import torch
 #
 # Important: Each tensor can only have .backward() called once.
 # You need a fresh tensor for this task, not the one from Task 1.
-x2 = None
+x2 = torch.tensor(2.0, requires_grad=True)
+f = 5 * x2**2 - 4 * x2 + 7
+f.backward()
+print("\nTask 3:")
+print("  f(2)       =", f.item())
+print("  Manual     =", 10 * 2.0 - 4)
+print("  x2.grad    =", x2.grad.item())
+print("  Match:", (10 * 2.0 - 4) == x2.grad.item())
 
 
 # ===========================================================================
 # Task 4: torch.no_grad()
 # ===========================================================================
 # Step 1: Create a tensor x3 with value 5.0 and requires_grad=True.
-x3 = None
+x3 = torch.tensor(5.0, requires_grad=True)
 
 # Step 2: Inside a "with torch.no_grad():" block, compute y_no_grad = x3 * 2.
 #         Print y_no_grad.requires_grad — should be False.
-y_no_grad = None
+with torch.no_grad():
+    y_no_grad = x3 * 2
+print("\nTask 4:")
+print("  Inside no_grad  -> requires_grad:", y_no_grad.requires_grad)
 
 # Step 3: Outside the block, compute z_with_grad = x3 * 2.
 #         Print z_with_grad.requires_grad — should be True.
@@ -81,7 +101,8 @@ y_no_grad = None
 # This demonstrates how no_grad() prevents gradient tracking.
 # You will use this during model evaluation in later exercises
 # to save memory and computation.
-z_with_grad = None
+z_with_grad = x3 * 2
+print("  Outside no_grad -> requires_grad:", z_with_grad.requires_grad)
 
 
 # ===========================================================================
