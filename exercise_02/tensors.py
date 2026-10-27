@@ -17,6 +17,11 @@ import torch
 #
 # Hint: torch.randn() creates a tensor with random values from a
 # normal distribution. Pass the dimensions as arguments.
+x = torch.randn(2, 3, 224, 224)
+print("Task 1:")
+print("  Shape: ", x.shape)
+print("  Dtype: ", x.dtype)
+print("  Device:", x.device)
 
 
 # ===========================================================================
