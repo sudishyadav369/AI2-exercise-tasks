@@ -33,7 +33,13 @@ print("  Device:", x.device)
 # Step 1: Check if CUDA is available using torch.cuda.is_available().
 # Step 2: Move the tensor using .to('cuda').
 # Step 3: Print the .device attribute to confirm.
-
+print("\nTask 2:")
+print("  Before:", x.device)
+if torch.cuda.is_available():
+    x_gpu = x.to('cuda')
+    print("  After: ", x_gpu.device)
+else:
+    print("  CUDA not available - staying on CPU")
 
 # ===========================================================================
 # Task 3: Indexing and Slicing
@@ -46,7 +52,12 @@ print("  Device:", x.device)
 #
 # Step 2: Extract only the green channel (index 1) of that image.
 #         Print its shape — should be (32, 32).
-
+batch = torch.randn(8, 3, 32, 32)
+fifth_image = batch[4]
+green_channel = batch[4, 1]
+print("\nTask 3:")
+print("  5th image shape:    ", fifth_image.shape)
+print("  Green channel shape:", green_channel.shape)
 
 # ===========================================================================
 # Task 4: Permute — HWC to CHW
@@ -57,7 +68,11 @@ print("  Device:", x.device)
 # Step 1: Convert to PyTorch's CHW format using .permute().
 #         You need to reorder dimensions: dim 2 → 0, dim 0 → 1, dim 1 → 2.
 # Step 2: Print both shapes to confirm (64, 64, 3) → (3, 64, 64).
-
+img_hwc = torch.randn(64, 64, 3)
+img_chw = img_hwc.permute(2, 0, 1)
+print("\nTask 4:")
+print("  HWC shape:", img_hwc.shape)
+print("  CHW shape:", img_chw.shape)
 
 # ===========================================================================
 # Task 5: Squeeze and Unsqueeze
@@ -71,7 +86,13 @@ print("  Device:", x.device)
 #
 # This pattern is common: models expect batched input [B, C, H, W],
 # so a single image needs unsqueeze before passing through.
-
+single = torch.randn(3, 128, 128)
+batched = single.unsqueeze(0)
+back = batched.squeeze(0)
+print("\nTask 5:")
+print("  Single: ", single.shape)
+print("  Batched:", batched.shape)
+print("  Back:   ", back.shape)
 
 # ===========================================================================
 # Task 6: Reshaping — Flatten
@@ -85,7 +106,11 @@ print("  Device:", x.device)
 # Use .view() or .reshape(). The batch dimension (4) stays, everything
 # else gets flattened into one dimension. You can pass -1 to let
 # PyTorch infer the flattened size automatically.
-
+features = torch.randn(4, 16, 8, 8)
+flat = features.view(features.size(0), -1)
+print("\nTask 6:")
+print("  Before:", features.shape)
+print("  After: ", flat.shape)
 
 # ===========================================================================
 # Task 7: Basic Math
@@ -98,3 +123,14 @@ print("  Device:", x.device)
 #    Compute the mean pixel value across the batch dimension (dim=0).
 #    Print the resulting shape — should be (3, 32, 32).
 #    This is how dataset mean is computed for normalization.
+m1 = torch.randn(3, 3)
+m2 = torch.randn(3, 3)
+print("\nTask 7a:")
+print("  Element-wise (*):\n", m1 * m2)
+print("  Matrix product (@):\n", m1 @ m2)
+
+imgs = torch.randn(4, 3, 32, 32)
+mean_img = imgs.mean(dim=0)
+print("\nTask 7b:")
+print("  Batch shape:    ", imgs.shape)
+print("  Mean over batch:", mean_img.shape)
