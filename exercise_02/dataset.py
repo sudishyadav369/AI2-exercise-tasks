@@ -31,7 +31,14 @@ SAMPLE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "exe
 #      and std=[0.229, 0.224, 0.225]
 #
 # Store the result in a variable called 'transform'.
-transform = None
+transform = transforms.Compose([
+    transforms.Resize((32, 32)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225],
+    ),
+])
 
 
 # ===========================================================================
@@ -42,42 +49,50 @@ class SimpleImageDataset(Dataset):
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
-        # Listing all subdirectories inside root_dir (ignore files).
-        # Sorting them alphabetically — this defines the class order.
-        # Storing as self.classes (list of strings)
+        # List class folders, sorted alphabetically
         self.classes = sorted([
             d for d in os.listdir(root_dir)
             if os.path.isdir(os.path.join(root_dir, d))
         ])
-        #   Step 1: Create a mapping from class name to integer index.
-        #           e.g. {"class_a": 0, "class_b": 1} (Hint: Use .enumerate() to get the index)
-        #           Store as self.class_to_idx.
-        self.class_to_idx = None
-        #   Step 2: Build a list of (file_path, label) tuples.
-        #           Loop over each class folder, then over each file inside it.
-        #           Store the full path and the integer label.
-        #           Store as self.samples.
-        self.samples = None
+        # Step 1: class name -> integer index
+        self.class_to_idx = {name: idx for idx, name in enumerate(self.classes)}
+        # Step 2: list of (file_path, label)
+        self.samples = []
+        for class_name in self.classes:
+            class_dir = os.path.join(root_dir, class_name)
+            label = self.class_to_idx[class_name]
+            for file_name in sorted(os.listdir(class_dir)):
+                file_path = os.path.join(class_dir, file_name)
+                if os.path.isfile(file_path):
+                    self.samples.append((file_path, label))
 
     def __len__(self):
-        #   Return the total number of samples.
-        pass
+        # Total number of samples
+        return len(self.samples)
 
     def __getitem__(self, idx):
-        #   Step 1: Get the file path and label from self.samples[idx].
-        #   Step 2: Open the image with PIL and convert to "RGB".
-        #   Step 3: Apply self.transform if it is not None.
-        #   Step 4: Return (image, label).
-        pass
-
+        # Get path + label, open image, apply transform, return
+        file_path, label = self.samples[idx]
+        image = Image.open(file_path).convert("RGB")
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, label
 if __name__ == "__main__":
     # ===========================================================================
     # Task 3: Create a DataLoader
     # ===========================================================================
     # Step 1: Instantiate SimpleImageDataset with SAMPLE_DIR
     #         and the transform from Task 1.
-    dataset = None
-    dataloader = None
+    dataset = SimpleImageDataset(SAMPLE_DIR, transform=transform)
+    print("Task 3:")
+    print("  Total samples:", len(dataset))
+    print("  Classes:", dataset.classes)
+
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0)
+
+    images, labels = next(iter(dataloader))
+    print("  Batch image shape:", images.shape)
+    print("  Batch labels:", labels)
     #
     # Step 2: Print len(dataset) and dataset.classes.
     #
@@ -98,7 +113,18 @@ if __name__ == "__main__":
     # Step 3: The pixel values are no longer in [0, 1]. Why?
     #         Write your answer as a comment.
     #         Hint: think about what Normalize() does.
-    
+    image, label = dataset[0]
+    print("\nTask 4:")
+    print("  Image shape:", image.shape)
+    print("  Min pixel value:", image.min().item())
+    print("  Max pixel value:", image.max().item())
+    print("  Label:", label)
+
+    # Why are values no longer in [0, 1]?
+    # ToTensor() scales pixels to [0, 1], but Normalize() then computes
+    # (value - mean) / std for each channel. This shifts values to be
+    # centred around 0, e.g. a black pixel 0.0 becomes
+    # (0 - 0.485) / 0.229 = -2.12. So values can be negative or above 1.
     
     # ===========================================================================
     # Verification
